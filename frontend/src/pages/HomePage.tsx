@@ -1,16 +1,19 @@
-import { useEffect, useState } from "react";
-import { Button, Container, Grid, Stack, Title } from "@mantine/core";
+import { useEffect, useMemo, useState } from "react";
 import { IconPlus } from "@tabler/icons-react";
 import { api } from "../api/client";
 import type { Container as ContainerType, Item } from "../types";
 import { ContainerCard } from "../components/ContainerCard";
 import { ItemList } from "../components/ItemList";
 import { AddItemForm } from "../components/AddItemForm";
+import { SearchBar } from "../components/SearchBar";
+import { SearchResults } from "../components/SearchResults";
+import styles from "../styles/ui.module.css";
 
 export function HomePage() {
   const [containers, setContainers] = useState<ContainerType[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
 
   const refresh = async () => {
     const [containerList, itemList] = await Promise.all([
@@ -45,41 +48,50 @@ export function HomePage() {
     refresh();
   };
 
+  const trimmedQuery = useMemo(() => query.trim(), [query]);
+
   if (loading) return null;
 
   return (
-    <Container size="md" py="xl">
-      <Stack gap="xl">
-        <Stack gap="sm">
-          <Title order={2}>Freestanding Items</Title>
-          <ItemList
-            items={items}
-            onUpdate={updateItem}
-            onDelete={deleteItem}
-            emptyLabel="No freestanding items yet."
-          />
-          <AddItemForm onAdd={addItem} />
-        </Stack>
+    <div className={styles.container}>
+      <div className={`${styles.stack} ${styles.gapLg}`}>
+        <SearchBar value={query} onChange={setQuery} />
 
-        <Stack gap="sm">
-          <Title order={2}>Containers</Title>
-          <Grid>
-            {containers.map((c) => (
-              <Grid.Col key={c.id} span={{ base: 12, sm: 6, md: 4 }}>
-                <ContainerCard container={c} />
-              </Grid.Col>
-            ))}
-          </Grid>
-          <Button
-            variant="light"
-            leftSection={<IconPlus size={16} />}
-            onClick={addContainer}
-            w={220}
-          >
-            Add bag/box/tote
-          </Button>
-        </Stack>
-      </Stack>
-    </Container>
+        {trimmedQuery ? (
+          <SearchResults query={trimmedQuery} />
+        ) : (
+          <>
+            <div className={`${styles.stack} ${styles.gapSm}`}>
+              <h2 className={`${styles.heading} ${styles.heading2}`}>Freestanding Items</h2>
+              <ItemList
+                items={items}
+                onUpdate={updateItem}
+                onDelete={deleteItem}
+                emptyLabel="No freestanding items yet."
+              />
+              <AddItemForm onAdd={addItem} />
+            </div>
+
+            <div className={`${styles.stack} ${styles.gapSm}`}>
+              <h2 className={`${styles.heading} ${styles.heading2}`}>Containers</h2>
+              <div className={styles.grid}>
+                {containers.map((c) => (
+                  <ContainerCard key={c.id} container={c} />
+                ))}
+              </div>
+              <button
+                type="button"
+                className={`${styles.btn} ${styles.btnLight}`}
+                onClick={addContainer}
+                style={{ alignSelf: "flex-start" }}
+              >
+                <IconPlus size={16} />
+                Add bag/box/tote
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }

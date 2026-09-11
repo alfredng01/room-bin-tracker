@@ -1,20 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import {
-  ActionIcon,
-  Anchor,
-  Container,
-  Group,
-  Stack,
-  Text,
-  TextInput,
-  Title,
-} from "@mantine/core";
+import { TextInput } from "@mantine/core";
 import { IconArrowLeft, IconCheck, IconPencil, IconTrash } from "@tabler/icons-react";
 import { api } from "../api/client";
 import type { ContainerWithItems } from "../types";
 import { ItemList } from "../components/ItemList";
 import { AddItemForm } from "../components/AddItemForm";
+import styles from "../styles/ui.module.css";
 
 export function ContainerPage() {
   const { id } = useParams();
@@ -67,42 +59,58 @@ export function ContainerPage() {
   };
 
   return (
-    <Container size="md" py="xl">
-      <Stack gap="lg">
-        <Anchor component={Link} to="/" size="sm">
-          <Group gap={4}>
+    <div className={styles.container}>
+      <div className={`${styles.stack} ${styles.gapMd}`}>
+        <Link to="/" className={styles.anchor}>
+          <span className={`${styles.group} ${styles.noWrap}`} style={{ gap: 4 }}>
             <IconArrowLeft size={14} /> Back to overview
-          </Group>
-        </Anchor>
+          </span>
+        </Link>
 
-        <Group justify="space-between">
+        <div className={`${styles.group} ${styles.justifyBetween} ${styles.noWrap}`}>
           {editingLabel ? (
-            <Group>
+            <div className={`${styles.group} ${styles.noWrap} ${styles.gapSm}`}>
               <TextInput
                 value={labelDraft}
                 onChange={(e) => setLabelDraft(e.currentTarget.value)}
                 onKeyDown={(e) => e.key === "Enter" && saveLabel()}
+                classNames={{ input: styles.input }}
                 autoFocus
               />
-              <ActionIcon onClick={saveLabel} variant="light">
+              <button
+                type="button"
+                className={`${styles.iconBtn} ${styles.iconBtnLight}`}
+                onClick={saveLabel}
+                aria-label="Save label"
+              >
                 <IconCheck size={16} />
-              </ActionIcon>
-            </Group>
+              </button>
+            </div>
           ) : (
-            <Group>
-              <Title order={2}>{container.label}</Title>
-              <ActionIcon variant="subtle" onClick={() => setEditingLabel(true)}>
+            <div className={`${styles.group} ${styles.noWrap} ${styles.gapSm}`}>
+              <h2 className={`${styles.heading} ${styles.heading2}`}>{container.label}</h2>
+              <button
+                type="button"
+                className={styles.iconBtn}
+                onClick={() => setEditingLabel(true)}
+                aria-label="Rename container"
+              >
                 <IconPencil size={16} />
-              </ActionIcon>
-            </Group>
+              </button>
+            </div>
           )}
-          <ActionIcon color="red" variant="subtle" onClick={deleteContainer}>
+          <button
+            type="button"
+            className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
+            onClick={deleteContainer}
+            aria-label="Delete container"
+          >
             <IconTrash size={18} />
-          </ActionIcon>
-        </Group>
+          </button>
+        </div>
 
-        <Stack gap="sm">
-          <Text fw={500}>Contents</Text>
+        <div className={`${styles.stack} ${styles.gapSm}`}>
+          <p className={`${styles.heading} ${styles.textSm}`}>Contents</p>
           <ItemList
             items={container.items}
             onUpdate={updateItem}
@@ -110,8 +118,8 @@ export function ContainerPage() {
             emptyLabel="This container is empty."
           />
           <AddItemForm onAdd={addItem} />
-        </Stack>
-      </Stack>
-    </Container>
+        </div>
+      </div>
+    </div>
   );
 }

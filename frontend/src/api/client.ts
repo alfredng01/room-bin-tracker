@@ -1,4 +1,4 @@
-import type { Container, ContainerWithItems, Item } from "../types";
+import type { Container, ContainerWithItems, Item, SearchResponse } from "../types";
 
 const BASE = "/api";
 
@@ -52,4 +52,7 @@ export const api = {
     }),
   deleteItem: (id: number) =>
     request<void>(`/items/${id}`, { method: "DELETE" }),
+
+  search: (q: string) =>
+    request<SearchResponse>(`/search?q=${encodeURIComponent(q)}`),
 };

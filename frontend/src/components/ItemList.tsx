@@ -1,14 +1,8 @@
 import { useState } from "react";
-import {
-  ActionIcon,
-  Group,
-  NumberInput,
-  Stack,
-  Text,
-  TextInput,
-} from "@mantine/core";
+import { NumberInput, TextInput } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
 import type { Item } from "../types";
+import styles from "../styles/ui.module.css";
 
 interface ItemListProps {
   items: Item[];
@@ -19,19 +13,15 @@ interface ItemListProps {
 
 export function ItemList({ items, onUpdate, onDelete, emptyLabel }: ItemListProps) {
   if (items.length === 0) {
-    return (
-      <Text c="dimmed" size="sm">
-        {emptyLabel}
-      </Text>
-    );
+    return <p className={styles.textDimmed}>{emptyLabel}</p>;
   }
 
   return (
-    <Stack gap="xs">
+    <div className={`${styles.stack} ${styles.gapXs}`}>
       {items.map((item) => (
         <ItemRow key={item.id} item={item} onUpdate={onUpdate} onDelete={onDelete} />
       ))}
-    </Stack>
+    </div>
   );
 }
 
@@ -48,7 +38,7 @@ function ItemRow({
   const [quantity, setQuantity] = useState<number | string>(item.quantity);
 
   return (
-    <Group wrap="nowrap" justify="space-between" gap="sm">
+    <div className={`${styles.group} ${styles.justifyBetween} ${styles.noWrap} ${styles.gapSm}`}>
       <TextInput
         value={name}
         onChange={(e) => setName(e.currentTarget.value)}
@@ -59,10 +49,10 @@ function ItemRow({
             setName(item.name);
           }
         }}
-        style={{ flex: 1 }}
-        size="sm"
+        classNames={{ root: styles.growField, input: styles.input }}
       />
       <NumberInput
+        hideControls
         value={quantity}
         onChange={setQuantity}
         onBlur={() => {
@@ -74,12 +64,16 @@ function ItemRow({
           }
         }}
         min={1}
-        w={90}
-        size="sm"
+        classNames={{ root: styles.qtyField, input: styles.input }}
       />
-      <ActionIcon color="red" variant="subtle" onClick={() => onDelete(item.id)}>
+      <button
+        type="button"
+        className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
+        onClick={() => onDelete(item.id)}
+        aria-label={`Delete ${item.name}`}
+      >
         <IconTrash size={16} />
-      </ActionIcon>
-    </Group>
+      </button>
+    </div>
   );
 }

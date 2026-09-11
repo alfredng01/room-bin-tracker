@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Button, Group, NumberInput, TextInput } from "@mantine/core";
+import { NumberInput, TextInput } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
+import styles from "../styles/ui.module.css";
 
 interface AddItemFormProps {
   onAdd: (name: string, quantity?: number) => void;
@@ -19,10 +20,8 @@ export function AddItemForm({ onAdd }: AddItemFormProps) {
   };
 
   return (
-    <Group
-      wrap="nowrap"
-      gap="sm"
-      component="form"
+    <form
+      className={`${styles.group} ${styles.noWrap} ${styles.gapSm}`}
       onSubmit={(e) => {
         e.preventDefault();
         submit();
@@ -32,20 +31,20 @@ export function AddItemForm({ onAdd }: AddItemFormProps) {
         placeholder="Item name"
         value={name}
         onChange={(e) => setName(e.currentTarget.value)}
-        style={{ flex: 1 }}
-        size="sm"
+        classNames={{ root: styles.growField, input: styles.input }}
       />
       <NumberInput
+        hideControls
         placeholder="Qty (1)"
         value={quantity}
         onChange={setQuantity}
         min={1}
-        w={100}
-        size="sm"
+        classNames={{ root: styles.qtyField, input: styles.input }}
       />
-      <Button type="submit" size="sm" leftSection={<IconPlus size={16} />}>
+      <button type="submit" className={`${styles.btn} ${styles.btnFilled}`}>
+        <IconPlus size={16} />
         Add
-      </Button>
-    </Group>
+      </button>
+    </form>
   );
 }

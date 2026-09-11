@@ -16,3 +16,12 @@ export interface Container {
 export interface ContainerWithItems extends Container {
   items: Item[];
 }
+
+export interface ContainerMatch extends Container {
+  match_count: number;
+}
+
+export interface SearchResponse {
+  freestandingItems: Item[];
+  containers: ContainerMatch[];
+}

@@ -1,27 +1,20 @@
 import { Link } from "react-router-dom";
-import { Card, Group, Text } from "@mantine/core";
 import { IconBox } from "@tabler/icons-react";
 import type { Container } from "../types";
+import styles from "../styles/ui.module.css";
 
 export function ContainerCard({ container }: { container: Container }) {
   return (
-    <Card
-      component={Link}
-      to={`/containers/${container.id}`}
-      withBorder
-      padding="md"
-      radius="md"
-      style={{ textDecoration: "none", color: "inherit" }}
-    >
-      <Group wrap="nowrap">
+    <Link to={`/containers/${container.id}`} className={styles.card}>
+      <div className={`${styles.group} ${styles.noWrap} ${styles.gapSm}`}>
         <IconBox size={28} stroke={1.5} />
         <div>
-          <Text fw={500}>{container.label}</Text>
-          <Text size="xs" c="dimmed">
+          <p className={`${styles.heading} ${styles.textSm}`}>{container.label}</p>
+          <p className={`${styles.textDimmed} ${styles.textXs}`}>
             {container.item_count} item{container.item_count === 1 ? "" : "s"}
-          </Text>
+          </p>
         </div>
-      </Group>
-    </Card>
+      </div>
+    </Link>
   );
 }
