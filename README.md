@@ -32,7 +32,9 @@ npm run dev
 - **Container**: `id`, `label` (defaults to `Box N`), `created_at`
 - **Item**: `id`, `name`, `quantity` (defaults to 1), `container_id` (null = freestanding), `created_at`
 
-SQLite file is written to `backend/data/attic.db` (override with `DATA_DIR`).
+SQLite file is written to `backend/data/attic.db` in local dev (override
+with `DATA_DIR`), or wherever `DATA_PATH` is bind-mounted to under Docker
+(see below).
 
 ## Search
 
@@ -55,23 +57,42 @@ stylesheet or specificity.
 
 ## Docker / deployment
 
-Each room is meant to be its own compose stack (own SQLite volume, own port).
+Each room is meant to be its own compose stack (own data directory, own port).
 
 ```bash
-cp .env.example .env   # set HOST_PORT per instance
+cp .env.example .env   # set HOST_PORT and DATA_PATH per instance
 docker compose up -d --build
 ```
 
 This builds two images:
 - `backend` — multi-stage Node 22 Alpine build, runs the compiled Express app
-  against `node:sqlite`, data persisted to a named volume (`/app/data`).
+  against `node:sqlite`. The SQLite file lives at `/app/data` in the
+  container, bind-mounted from the host path in `DATA_PATH` (default `./data`
+  next to the compose file).
 - `frontend` — multi-stage build: `vite build` in a Node stage, served by
   nginx, which also reverse-proxies `/api/*` to the backend container.
 
 Only the frontend's port is published (`HOST_PORT`, default `8080`); the
-backend is only reachable inside the compose network. For a second room,
-copy the repo (or use a separate `.env`/`COMPOSE_PROJECT_NAME`) so each
-instance gets its own volume and port.
+backend is only reachable inside the compose network.
+
+### Unraid
+
+Requires the Compose Manager (or similar) plugin from Community Apps, since
+stock Unraid doesn't run `docker-compose.yml` stacks natively.
+
+For each room, use a distinct `.env`:
+
+```bash
+HOST_PORT=8081
+DATA_PATH=/mnt/user/appdata/attic-tracking-kitchen/data
+```
+
+Pointing `DATA_PATH` at `/mnt/user/appdata/...` (on the array, not `/mnt/cache`
+unless you've set up cache+mover for it) means the SQLite file is a normal
+file on disk there, so it's picked up by CA Backup/Restore like any other
+appdata. Give each room its own `DATA_PATH` and `HOST_PORT` (and either a
+separate checkout directory or a distinct `COMPOSE_PROJECT_NAME`) so the
+stacks don't collide.
 
 ## Notes / next steps
 
