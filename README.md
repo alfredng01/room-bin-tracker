@@ -80,9 +80,23 @@ backend is only reachable inside the compose network.
 Requires the Compose Manager (or similar) plugin from Community Apps, since
 stock Unraid doesn't run `docker-compose.yml` stacks natively.
 
-For each room, use a distinct `.env`:
+Compose Manager keeps the `docker-compose.yml` it runs under its own
+`/boot/config/plugins/compose.manager/projects/<name>/` folder — separate
+from wherever you actually put this repo. Since `build: ./backend` resolves
+relative to the compose file's own location, that split makes the default
+build contexts resolve to a path with no `backend`/`frontend` directories in
+it, and `docker compose up` fails with something like:
+
+```
+unable to prepare context: path "/boot/config/plugins/compose.manager/projects/<name>/backend" not found
+```
+
+Fix this by setting `APP_PATH` to wherever you cloned/copied the repo (the
+directory containing `backend/` and `frontend/`), so the build contexts
+point there instead of alongside the compose file:
 
 ```bash
+APP_PATH=/mnt/user/appdata/attic-tracking-repo
 HOST_PORT=8081
 DATA_PATH=/mnt/user/appdata/attic-tracking-kitchen/data
 ```
