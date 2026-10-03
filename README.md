@@ -108,6 +108,30 @@ appdata. Give each room its own `DATA_PATH` and `HOST_PORT` (and either a
 separate checkout directory or a distinct `COMPOSE_PROJECT_NAME`) so the
 stacks don't collide.
 
+### Cloudflare Tunnel
+
+The app is a single origin: nginx serves the UI and proxies `/api/*`, and the
+frontend only uses relative URLs. So one tunnel hostname is all that's needed,
+no CORS or API-URL settings.
+
+With an existing `cloudflared` (Zero Trust dashboard → Networks → Tunnels →
+your tunnel → Public Hostname):
+
+- Hostname: e.g. `attic.example.com`
+- Service: `HTTP` → `<unraid-ip>:<HOST_PORT>` (e.g. `192.168.1.10:8081`).
+  If cloudflared runs on the same Docker network as the stack, `frontend:80`
+  works too.
+
+**The app has no login of its own**, so put Cloudflare Access in front of it
+(Zero Trust → Access → Applications → Add → Self-hosted): use the same
+hostname, add a policy such as "Allow — emails ending in @yourdomain" or a
+specific list of emails. Without this, anyone who finds the URL can edit the
+inventory. One Access application per room hostname.
+
+nginx forwards `CF-Connecting-IP` as the client IP and honors
+`X-Forwarded-Proto`, so the real visitor IP and `https` scheme survive the
+tunnel hop (the backend doesn't currently use them).
+
 ## Notes / next steps
 
 - Requires Node >= 22.5 for `node:sqlite` (bundled in the backend's Docker image).
