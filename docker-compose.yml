@@ -1,16 +1,8 @@
 services:
-  backend:
-    build: ${APP_PATH:-.}/backend
+  app:
+    image: ghcr.io/alfredng01/room-bin-tracker:${IMAGE_TAG:-latest}
     restart: unless-stopped
-    environment:
-      - DATA_DIR=/app/data
+    ports:
+      - "${HOST_PORT:-8080}:3001"
     volumes:
       - ${DATA_PATH:-./data}:/app/data
-
-  frontend:
-    build: ${APP_PATH:-.}/frontend
-    restart: unless-stopped
-    depends_on:
-      - backend
-    ports:
-      - "${HOST_PORT:-8080}:80"
