@@ -17,6 +17,14 @@ export interface ContainerWithItems extends Container {
   items: Item[];
 }
 
+export interface PaginatedItems {
+  items: Item[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface ContainerMatch extends Container {
   match_count: number;
 }

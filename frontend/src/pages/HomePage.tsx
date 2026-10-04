@@ -1,31 +1,37 @@
 import { useEffect, useMemo, useState } from "react";
 import { IconPlus } from "@tabler/icons-react";
 import { api } from "../api/client";
-import type { Container as ContainerType, Item } from "../types";
+import type { Container as ContainerType, PaginatedItems } from "../types";
 import { ContainerCard } from "../components/ContainerCard";
 import { ItemList } from "../components/ItemList";
 import { AddItemForm } from "../components/AddItemForm";
+import { Pagination } from "../components/Pagination";
 import { SearchBar } from "../components/SearchBar";
 import { SearchResults } from "../components/SearchResults";
 import styles from "../styles/ui.module.css";
 
+const PAGE_SIZE = 10;
+
 export function HomePage() {
   const [containers, setContainers] = useState<ContainerType[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
+  const [itemPage, setItemPage] = useState<PaginatedItems | null>(null);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
 
-  const refresh = async () => {
-    const [containerList, itemList] = await Promise.all([
+  const page = itemPage?.page ?? 1;
+
+  // The server clamps out-of-range pages, so its response is the source of truth.
+  const refresh = async (targetPage = page) => {
+    const [containerList, items] = await Promise.all([
       api.getContainers(),
-      api.getFreestandingItems(),
+      api.getFreestandingItems(targetPage, PAGE_SIZE),
     ]);
     setContainers(containerList);
-    setItems(itemList);
+    setItemPage(items);
   };
 
   useEffect(() => {
-    refresh().finally(() => setLoading(false));
+    refresh(1).finally(() => setLoading(false));
   }, []);
 
   const addContainer = async () => {
@@ -35,7 +41,9 @@ export function HomePage() {
 
   const addItem = async (name: string, quantity?: number) => {
     await api.createItem({ name, quantity, container_id: null });
-    refresh();
+    // New items sort last; jump to the final page so the user sees what they added.
+    const total = (itemPage?.total ?? 0) + 1;
+    refresh(Math.ceil(total / PAGE_SIZE));
   };
 
   const updateItem = async (id: number, changes: { name?: string; quantity?: number }) => {
@@ -64,11 +72,20 @@ export function HomePage() {
             <div className={`${styles.stack} ${styles.gapSm}`}>
               <h2 className={`${styles.heading} ${styles.heading2}`}>Freestanding Items</h2>
               <ItemList
-                items={items}
+                items={itemPage?.items ?? []}
                 onUpdate={updateItem}
                 onDelete={deleteItem}
                 emptyLabel="No freestanding items yet."
               />
+              {itemPage && (
+                <Pagination
+                  page={itemPage.page}
+                  totalPages={itemPage.totalPages}
+                  total={itemPage.total}
+                  limit={itemPage.limit}
+                  onChange={(p) => refresh(p)}
+                />
+              )}
               <AddItemForm onAdd={addItem} />
             </div>
 

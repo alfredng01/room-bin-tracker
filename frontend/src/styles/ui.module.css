@@ -73,8 +73,12 @@
   color: var(--color-text-dimmed);
   cursor: pointer;
 }
-.iconBtn:hover {
+.iconBtn:hover:not(:disabled) {
   background: var(--color-surface-hover);
+}
+.iconBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 .iconBtnDanger {
   color: var(--color-danger);

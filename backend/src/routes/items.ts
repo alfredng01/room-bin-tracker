@@ -3,14 +3,34 @@ import { db } from "../db.js";
 
 export const itemsRouter = Router();
 
-// GET /api/items - freestanding items (no container)
-itemsRouter.get("/", (_req, res) => {
+const DEFAULT_LIMIT = 10;
+const MAX_LIMIT = 100;
+
+function positiveInt(value: unknown, fallback: number): number {
+  const n = Number(value);
+  return Number.isInteger(n) && n > 0 ? n : fallback;
+}
+
+// GET /api/items?page=1&limit=10 - paginated freestanding items (no container)
+itemsRouter.get("/", (req, res) => {
+  const limit = Math.min(positiveInt(req.query.limit, DEFAULT_LIMIT), MAX_LIMIT);
+  const requestedPage = positiveInt(req.query.page, 1);
+
+  const { total } = db
+    .prepare("SELECT COUNT(*) AS total FROM items WHERE container_id IS NULL")
+    .get() as { total: number };
+
+  // Clamp so deleting the last item on the final page lands on the new last page.
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const page = Math.min(requestedPage, totalPages);
+
   const items = db
     .prepare(
-      "SELECT * FROM items WHERE container_id IS NULL ORDER BY id ASC"
+      "SELECT * FROM items WHERE container_id IS NULL ORDER BY id ASC LIMIT ? OFFSET ?"
     )
-    .all();
-  res.json(items);
+    .all(limit, (page - 1) * limit);
+
+  res.json({ items, total, page, limit, totalPages });
 });
 
 // POST /api/items - create an item, optionally inside a container

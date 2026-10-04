@@ -1,4 +1,10 @@
-import type { Container, ContainerWithItems, Item, SearchResponse } from "../types";
+import type {
+  Container,
+  ContainerWithItems,
+  Item,
+  PaginatedItems,
+  SearchResponse,
+} from "../types";
 
 const BASE = "/api";
 
@@ -32,7 +38,8 @@ export const api = {
   deleteContainer: (id: number) =>
     request<void>(`/containers/${id}`, { method: "DELETE" }),
 
-  getFreestandingItems: () => request<Item[]>("/items"),
+  getFreestandingItems: (page: number, limit: number) =>
+    request<PaginatedItems>(`/items?page=${page}&limit=${limit}`),
   createItem: (input: {
     name: string;
     quantity?: number;
